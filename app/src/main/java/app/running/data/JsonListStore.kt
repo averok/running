@@ -15,11 +15,7 @@ class JsonListStore<T>(
     elementSerializer: KSerializer<T>,
     private val idOf: (T) -> String,
 ) {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        prettyPrint = true
-        classDiscriminator = "_t"
-    }
+    private val json = AppJson.instance
     private val serializer = ListSerializer(elementSerializer)
 
     private val _items = MutableStateFlow(load())
@@ -45,6 +41,12 @@ class JsonListStore<T>(
 
     fun addAll(items: List<T>) {
         _items.update { it + items }
+        persist()
+    }
+
+    /** Sustituye todo el contenido (importación de una copia de seguridad). */
+    fun replaceAll(items: List<T>) {
+        _items.value = items
         persist()
     }
 

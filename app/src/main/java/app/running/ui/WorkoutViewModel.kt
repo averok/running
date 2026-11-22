@@ -1,16 +1,22 @@
 package app.running.ui
 
 import android.app.Application
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.running.data.Backup
 import app.running.data.JsonListStore
 import app.running.data.ShoePhotos
 import app.running.model.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.io.File
 
 class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
@@ -51,6 +57,70 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         val reached = after >= shoe.limitKm
         val approaching = before < shoe.limitKm * 0.9 && after >= shoe.limitKm * 0.9
         if (reached || approaching) _alert.value = ShoeAlert(shoe.name, after, shoe.limitKm, reached)
+    }
+
+    // ---- Copia de seguridad (exportar / importar)
+
+    private val _message = MutableStateFlow<String?>(null)
+    /** Resultado de la última operación, para mostrarlo en un snackbar. */
+    val message: StateFlow<String?> = _message
+    fun clearMessage() { _message.value = null }
+
+    private val _pendingImport = MutableStateFlow<Backup.Contents?>(null)
+    /** Copia ya leída y validada, a la espera de que el usuario confirme el reemplazo. */
+    val pendingImport: StateFlow<Backup.Contents?> = _pendingImport
+    fun cancelImport() { _pendingImport.value = null }
+
+    val appVersion: String
+        get() = runCatching {
+            val app = getApplication<Application>()
+            app.packageManager.getPackageInfo(app.packageName, 0).versionName
+        }.getOrNull() ?: "?"
+
+    fun exportTo(uri: Uri) {
+        val app = getApplication<Application>()
+        val (w, s, ses) = Triple(workouts.value, shoes.value, sessions.value)
+        viewModelScope.launch(Dispatchers.IO) {
+            _message.value = runCatching {
+                app.contentResolver.openOutputStream(uri, "w")!!.use { Backup.write(app, it, appVersion, w, s, ses) }
+                "Copia guardada: ${w.size} entrenos, ${ses.size} sesiones, ${s.size} zapatillas."
+            }.getOrElse { "No se pudo guardar la copia: ${it.message ?: "error desconocido"}" }
+        }
+    }
+
+    /** Lee y valida el archivo; si es correcto queda en [pendingImport] para confirmar. No toca los datos. */
+    fun readBackup(uri: Uri) {
+        val app = getApplication<Application>()
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { app.contentResolver.openInputStream(uri)!!.use { Backup.read(it) } }
+                .onSuccess { _pendingImport.value = it }
+                .onFailure {
+                    Log.w("Backup", "No se pudo leer la copia", it)
+                    _message.value = (it as? Backup.BackupException)?.message
+                        ?: "No se pudo leer el archivo. ¿Es una copia de seguridad de Running?"
+                }
+        }
+    }
+
+    fun confirmImport() {
+        val backup = _pendingImport.value ?: return
+        _pendingImport.value = null
+        viewModelScope.launch(Dispatchers.IO) {
+            _message.value = runCatching { restore(backup); "Datos importados." }
+                .getOrElse { "No se pudo importar: ${it.message ?: "error desconocido"}" }
+        }
+    }
+
+    private fun restore(backup: Backup.Contents) {
+        val app = getApplication<Application>()
+        // Primero las fotos nuevas: si falla algo aquí, los datos actuales siguen intactos.
+        backup.photos.forEach { (name, bytes) -> ShoePhotos.file(app, name).writeBytes(bytes) }
+        workoutStore.replaceAll(backup.workouts)
+        shoeStore.replaceAll(backup.shoes)
+        sessionStore.replaceAll(backup.sessions)
+        // Las fotos que ya no usa ninguna zapatilla se borran.
+        val keep = backup.shoes.mapNotNull { it.photo }.toSet()
+        ShoePhotos.dir(app).listFiles()?.filter { it.name !in keep }?.forEach { it.delete() }
     }
 
     private val _draft = MutableStateFlow<Workout?>(null)

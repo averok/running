@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.running.ui.HomeTab
 import app.running.ui.RunningTheme
 import app.running.ui.SessionsScreen
+import app.running.ui.SettingsScreen
 import app.running.ui.ShoeAlertDialog
 import app.running.ui.ShoesScreen
 import app.running.ui.WorkoutEditorScreen
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
                     d != null -> WorkoutEditorScreen(vm, d)
                     vm.tab == HomeTab.WORKOUTS -> WorkoutListScreen(vm)
                     vm.tab == HomeTab.SESSIONS -> SessionsScreen(vm)
+                    vm.tab == HomeTab.SETTINGS -> SettingsScreen(vm)
                     else -> ShoesScreen(vm)
                 }
                 ShoeAlertDialog(vm)

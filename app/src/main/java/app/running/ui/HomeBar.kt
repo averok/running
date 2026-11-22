@@ -3,6 +3,7 @@ package app.running.ui
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Hiking
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -15,6 +16,7 @@ enum class HomeTab(val label: String, val icon: ImageVector) {
     WORKOUTS("Entrenos", Icons.Default.FitnessCenter),
     SESSIONS("Historial", Icons.Default.CalendarMonth),
     SHOES("Zapatillas", Icons.Default.Hiking),
+    SETTINGS("Ajustes", Icons.Default.Settings),
 }
 
 @Composable
