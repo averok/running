@@ -1,0 +1,49 @@
+# CLAUDE.md
+
+App Android **Running** (`app.running`): registro de entrenos de running. Permite diseñar entrenos por bloques, registrar sesiones realizadas y llevar el control de km por zapatillas con aviso de límite. Kotlin + Jetpack Compose, un solo módulo (`:app`). UI y textos en español.
+
+## Alcance (decisiones del usuario)
+
+- Es **solo un registro**: el entreno en directo (GPS, avisos de voz, servicio en segundo plano) se descartó. Para correr usa la app de Polar.
+- La integración con Polar/Strava (importar sesiones, `gear_id` de Strava) está **aparcada**. Si se retoma, la vía preferida era la API de Strava (Polar Flow ya sincroniza con Strava), pidiendo antes al usuario crear la app en `strava.com/settings/api`.
+- Aún no hay release firmado ni icono propio: solo APK debug.
+
+## Comandos
+
+```
+export JAVA_HOME=~/dev/jdk ANDROID_HOME=~/dev/android-sdk   # JDK y SDK compartidos con otros proyectos del usuario
+./gradlew assembleDebug                                      # APK en app/build/outputs/apk/debug/app-debug.apk
+scripts/emulator.sh &                                        # AVD "running" (Android 34 x86_64, KVM), ventana visible vía XWayland
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -n app.running/.MainActivity
+```
+
+- El AVD `running` es propio de este proyecto; **no tocar** el AVD de `ticketplus`.
+- Si se usa el emulador, la ventana debe quedar visible para el usuario.
+- No hay tests ni lint configurados. Se verifica compilando y probando en el emulador.
+- Versiones: AGP 8.7.3, Kotlin 2.0.21, Compose BOM 2024.10.01, compileSdk/targetSdk 35, minSdk 26, JVM 17.
+
+## Arquitectura
+
+Paquete `app.running` en `app/src/main/java/app/running/`:
+
+- `model/Workout.kt`: `Workout` → lista de `WorkoutItem`, que es `SingleItem` (un bloque) o `GroupItem` (×N repeticiones de varios bloques). `Block` = tipo (calentamiento, trabajo, recuperación, enfriamiento, descanso) + `EndCondition` (tiempo, distancia, manual) + `BlockTarget` opcional (ritmo, velocidad, pulsaciones). Calcula estimaciones: si hay ritmo o velocidad deduce el tiempo o la distancia que falta, y la UI lo marca con «≈».
+- `model/Gear.kt`: `Shoe` (límite de km, 700 por defecto; `initialKm` para km previos; `retired`) y `Session` (fecha, entreno opcional, zapatilla, distancia en metros). Los km de cada zapatilla **se derivan de las sesiones** con `Shoe.totalKm`; no se guardan acumulados.
+- `model/Samples.kt`: entrenos de ejemplo (6×400, rodaje, fartlek, progresivo) para el botón «Cargar ejemplos».
+- `data/JsonListStore.kt`: persistencia genérica en JSON local (`filesDir`, escritura atómica vía `.tmp` + rename), expuesta como `StateFlow`. Migrable a Room si crece.
+- `ui/WorkoutViewModel.kt`: único ViewModel. Mantiene los stores de entrenos, zapatillas y sesiones, el borrador del editor (`_draft`) y el aviso de límite (`_alert`).
+- `ui/`: pantallas Compose (`WorkoutListScreen`, `WorkoutEditorScreen`, `BlockDialog`, `SessionsScreen`, `ShoesScreen`), barra de pestañas (`HomeBar`: Entrenos / Sesiones / Zapatillas), `Timeline` (cronograma de colores), `Format` y `Theme`.
+
+## Reglas de negocio a respetar
+
+- Aviso de zapatillas al registrar una sesión: «casi al límite» a partir del 90 %, y «límite alcanzado» cada vez que una sesión deja la zapatilla en el límite o por encima. Barra de progreso naranja ≥ 90 %, roja al llegar al límite.
+- Borrar una sesión resta sus km automáticamente (por estar derivados).
+- Las zapatillas retiradas salen aparte y no se ofrecen al registrar sesiones.
+- Al registrar una sesión con un entreno, la distancia se rellena con la estimada y se preselecciona la zapatilla de la última sesión.
+- El editor pregunta antes de descartar cambios sin guardar.
+
+## Gotchas
+
+- `Target` choca con `kotlin.annotation.Target`: por eso la clase se llama `BlockTarget`.
+- Cuidado con `trimNumber` en `ui/Format.kt`: una versión anterior recortaba ceros de enteros (10 → «1»).
+- `local.properties` y `build/` están en `.gitignore`. Repo git en la rama `main`.
