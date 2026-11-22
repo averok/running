@@ -6,7 +6,7 @@ App Android **Running** (`app.running`): registro de entrenos de running. Permit
 
 - Es **solo un registro**: el entreno en directo (GPS, avisos de voz, servicio en segundo plano) se descartó. Para correr usa la app de Polar.
 - La integración con Polar/Strava (importar sesiones, `gear_id` de Strava) está **aparcada**. Si se retoma, la vía preferida era la API de Strava (Polar Flow ya sincroniza con Strava), pidiendo antes al usuario crear la app en `strava.com/settings/api`.
-- Los releases se publican en GitHub Releases, firmados con una clave propia (ver «Releases y actualizaciones»). La app ya no tiene que desinstalarse para actualizarse. Aún no hay icono propio.
+- Los releases se publican en GitHub Releases, firmados con una clave propia (ver «Releases y actualizaciones»). La app ya no tiene que desinstalarse para actualizarse. El icono propio ya existe (ver «Estilo visual»).
 
 ## Comandos
 
@@ -54,6 +54,7 @@ Paquete `app.running` en `app/src/main/java/app/running/`:
 - Los colores de bloque usan la paleta de zonas de Polar: calentamiento ámbar, trabajo rosa, recuperación verde, enfriamiento azul, descanso gris.
 - Componentes compartidos en `ui/PolarComponents.kt`: `PolarTopBar` (título centrado + línea roja), `SectionHeader`, `StatBlock` (cifra grande + unidad pequeña + etiqueta), `PolarCard` (plana, borde fino) y `PolarFab`. Usarlos en pantallas nuevas en vez de `Card`/`TopAppBar`/FAB de Material.
 - Los botones deben llevar `shape = MaterialTheme.shapes.medium` para que no salgan en píldora.
+- **Icono**: adaptativo y vectorial (barras de intensidad de un entreno, con los colores de zona, sobre fondo oscuro y una línea roja). Se genera con `python3 scripts/icon/generate.py`, que escribe `res/drawable/ic_launcher_*.xml`, `res/mipmap-anydpi-v26/ic_launcher*.xml` (incluye capa monocroma para los iconos temáticos de Android 13+) y `docs/icon.png`. Para cambiarlo, editar el script y regenerar, no los XML a mano. Si cambia la paleta de zonas de `Theme.kt`, actualizar los colores del script.
 - Las capturas de referencia están en `polar-screenshots/` (ignorada por git: son de Polar).
 
 ## Capturas del README

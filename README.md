@@ -1,3 +1,5 @@
+<img src="docs/icon.png" align="right" width="110" alt="Icono de Running">
+
 # Running
 
 App Android (Kotlin + Jetpack Compose) para crear entrenos por bloques, registrar sesiones y llevar el control de km de las zapatillas.
