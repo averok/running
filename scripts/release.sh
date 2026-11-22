@@ -44,11 +44,17 @@ echo "Firma verificada (coincide con app/release-cert.sha256)."
 if [ "${1:-}" = "--publish" ]; then
   command -v gh >/dev/null || { echo "Falta gh (GitHub CLI) para publicar."; exit 1; }
   git tag "$TAG" && git push origin "$TAG"
-  gh release create "$TAG" "$OUT" --title "Running $VERSION" --generate-notes
+  # Notas: docs/release-notes/X.Y.Z.md si existe (la app muestra el principio al avisar de la actualización).
+  NOTES="docs/release-notes/$VERSION.md"
+  if [ -f "$NOTES" ]; then
+    gh release create "$TAG" "$OUT" --title "Running $VERSION" --notes-file "$NOTES"
+  else
+    gh release create "$TAG" "$OUT" --title "Running $VERSION" --generate-notes
+  fi
 else
   echo
   echo "Para publicarlo:"
   echo "  git tag $TAG && git push origin $TAG"
-  echo "  gh release create $TAG $OUT --title \"Running $VERSION\" --generate-notes"
+  echo "  gh release create $TAG $OUT --title \"Running $VERSION\" --notes-file docs/release-notes/$VERSION.md   # o --generate-notes"
   echo "  (o súbelo a mano en github.com/$(git remote get-url origin | sed 's#.*github.com[:/]##; s#\.git$##')/releases/new)"
 fi

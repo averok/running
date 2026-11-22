@@ -9,7 +9,7 @@ plugins {
 
 // Versión de la app. Al publicar un release se cambia SOLO esto: versionCode se deriva de aquí
 // (major*10000 + minor*100 + patch), así que siempre crece con la versión y nunca se desincronizan.
-val appVersion = "0.2.0"
+val appVersion = "0.3.0"
 
 // Repositorio donde se publican los releases y que la app consulta para buscar actualizaciones.
 val githubRepo = "averok/running"
