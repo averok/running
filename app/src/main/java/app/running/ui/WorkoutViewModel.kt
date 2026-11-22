@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.running.data.JsonListStore
+import app.running.data.ShoePhotos
 import app.running.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,8 +28,18 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     val alert: StateFlow<ShoeAlert?> = _alert
     fun dismissAlert() { _alert.value = null }
 
-    fun saveShoe(shoe: Shoe) = shoeStore.upsert(shoe)
-    fun deleteShoe(id: String) = shoeStore.delete(id)
+    fun saveShoe(shoe: Shoe) {
+        val oldPhoto = shoes.value.find { it.id == shoe.id }?.photo
+        shoeStore.upsert(shoe)
+        // La foto anterior queda huérfana si se ha cambiado o quitado.
+        if (oldPhoto != null && oldPhoto != shoe.photo) ShoePhotos.delete(getApplication(), oldPhoto)
+    }
+
+    fun deleteShoe(id: String) {
+        val photo = shoes.value.find { it.id == id }?.photo
+        shoeStore.delete(id)
+        ShoePhotos.delete(getApplication(), photo)
+    }
     fun deleteSession(id: String) = sessionStore.delete(id)
 
     fun addSession(session: Session) {

@@ -11,6 +11,8 @@ data class Shoe(
     /** Km que ya llevaban antes de empezar a usar la app. */
     val initialKm: Double = 0.0,
     val retired: Boolean = false,
+    /** Nombre del archivo de la foto en `filesDir/shoe-photos/` (ver `ShoePhotos`). */
+    val photo: String? = null,
 )
 
 /** Una sesión realizada. Los km de cada zapatilla se derivan de estas sesiones. */

@@ -28,9 +28,10 @@ adb shell am start -n app.running/.MainActivity
 Paquete `app.running` en `app/src/main/java/app/running/`:
 
 - `model/Workout.kt`: `Workout` → lista de `WorkoutItem`, que es `SingleItem` (un bloque) o `GroupItem` (×N repeticiones de varios bloques). `Block` = tipo (calentamiento, trabajo, recuperación, enfriamiento, descanso) + `EndCondition` (tiempo, distancia, manual) + `BlockTarget` opcional (ritmo, velocidad, pulsaciones). Calcula estimaciones: si hay ritmo o velocidad deduce el tiempo o la distancia que falta, y la UI lo marca con «≈».
-- `model/Gear.kt`: `Shoe` (límite de km, 700 por defecto; `initialKm` para km previos; `retired`) y `Session` (fecha, entreno opcional, zapatilla, distancia en metros). Los km de cada zapatilla **se derivan de las sesiones** con `Shoe.totalKm`; no se guardan acumulados.
+- `model/Gear.kt`: `Shoe` (límite de km, 700 por defecto; `initialKm` para km previos; `retired`; `photo` = nombre del archivo de la foto) y `Session` (fecha, entreno opcional, zapatilla, distancia en metros). Los km de cada zapatilla **se derivan de las sesiones** con `Shoe.totalKm`; no se guardan acumulados.
 - `model/Samples.kt`: entrenos de ejemplo (6×400, rodaje, fartlek, progresivo) para el botón «Cargar ejemplos».
 - `data/JsonListStore.kt`: persistencia genérica en JSON local (`filesDir`, escritura atómica vía `.tmp` + rename), expuesta como `StateFlow`. Migrable a Room si crece.
+- `data/ShoePhotos.kt`: las fotos de zapatillas se copian reducidas (máx. 960 px, JPEG, respetando EXIF) a `filesDir/shoe-photos/`; en el modelo solo va el nombre. Se eligen con el selector del sistema (`PickVisualMedia`, sin permisos). `ShoePhoto` (en `ui/`) las muestra con un icono si no hay. El ViewModel borra el archivo al quitar/cambiar la foto o borrar la zapatilla, y el diálogo borra la foto recién elegida si se cancela. La futura exportación debe incluir esta carpeta.
 - `ui/WorkoutViewModel.kt`: único ViewModel. Mantiene los stores de entrenos, zapatillas y sesiones, el borrador del editor (`_draft`) y el aviso de límite (`_alert`).
 - `ui/`: pantallas Compose (`WorkoutListScreen`, `WorkoutEditorScreen`, `BlockDialog`, `SessionsScreen`, `ShoesScreen`), barra de pestañas (`HomeBar`: Entrenos / Historial / Zapatillas), `MonthCalendar` (cuadrícula mensual desde el lunes), `Timeline` (cronograma de colores), `Format` y `Theme`. `SessionsScreen` es la pestaña **Historial**: calendario + resumen del mes + sesiones del día elegido, y el registro de sesión hereda el día seleccionado. Los nombres de meses y días usan `EsLocale` (español fijo, como el resto de textos).
 
@@ -46,7 +47,7 @@ Paquete `app.running` en `app/src/main/java/app/running/`:
 
 - Están en `docs/screenshots/` (`entrenos`, `editor`, `historial`, `zapatillas`; 540 px de ancho) y se muestran en el README.
 - **Al cambiar la interfaz de forma visible, regenerarlas** y, si se añade una pantalla importante, incluirla en el README.
-- Datos de ejemplo en `scripts/demo-data/` (`shoes.json`, `sessions.json`, fechas de noviembre de 2026). Para cargarlos en el emulador: `adb shell am force-stop app.running`, luego `adb shell "run-as app.running sh -c 'cat > files/shoes.json'" < scripts/demo-data/shoes.json` (igual con `sessions.json`) y abrir la app. Captura con `adb exec-out screencap -p` y reducir con `magick … -resize 540x`.
+- Datos de ejemplo en `scripts/demo-data/` (`shoes.json`, `sessions.json`, fechas de noviembre de 2026, y `photos/` con las imágenes de las zapatillas). Para cargarlos en el emulador: `adb shell am force-stop app.running`, luego `adb shell "run-as app.running sh -c 'cat > files/shoes.json'" < scripts/demo-data/shoes.json` (igual con `sessions.json`; las fotos van a `files/shoe-photos/<nombre>.jpg`) y abrir la app. Con `run-as`, los globs (`*`) hay que escaparlos dentro de comillas dobles o el shell del dispositivo los expande antes. Captura con `adb exec-out screencap -p` y reducir con `magick … -resize 540x`.
 - Si el mes actual ya no es noviembre de 2026, navegar al calendario a ese mes antes de capturar.
 
 ## Reglas de negocio a respetar

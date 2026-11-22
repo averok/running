@@ -16,7 +16,7 @@ App Android (Kotlin + Jetpack Compose) para crear entrenos por bloques, registra
 ## Funciones
 - **Entrenos por bloques**: calentamiento, trabajo, recuperación, enfriamiento y descanso, con repeticiones y objetivo opcional (ritmo, velocidad o pulsaciones).
 - **Historial en calendario**: sesiones por día, con km y resumen mensual.
-- **Zapatillas**: km acumulados con límite personalizable y aviso al acercarse o alcanzarlo.
+- **Zapatillas**: foto del modelo, km acumulados con límite personalizable y aviso al acercarse o alcanzarlo.
 
 ## Modelo
 - `Workout` → lista de `WorkoutItem`: `SingleItem` (un bloque) o `GroupItem` (×N repeticiones de varios bloques).

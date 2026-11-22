@@ -1,6 +1,11 @@
 package app.running.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,12 +16,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.running.data.ShoePhotos
 import app.running.model.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,38 +93,41 @@ private fun ShoeCard(shoe: Shoe, km: Double, onClick: () -> Unit) {
         else -> PolarBlue
     }
     PolarCard(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Column(Modifier.padding(16.dp)) {
-            Text(shoe.name, style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(4.dp))
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(trimNumber(km, 1), style = StatNumber)
+        Row(Modifier.padding(16.dp)) {
+            ShoePhoto(shoe.photo, Modifier.size(80.dp).clip(MaterialTheme.shapes.small))
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(shoe.name, style = MaterialTheme.typography.titleMedium)
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(trimNumber(km, 1), style = StatNumber)
+                    Text(
+                        " / ${trimNumber(shoe.limitKm, 0)} km",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                }
+                Spacer(Modifier.height(6.dp))
+                LinearProgressIndicator(
+                    progress = { ratio.coerceIn(0.0, 1.0).toFloat() },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = barColor,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {},
+                )
+                Spacer(Modifier.height(6.dp))
                 Text(
-                    " / ${trimNumber(shoe.limitKm, 0)} km",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 4.dp),
+                    when {
+                        shoe.retired -> "Retirada"
+                        ratio >= 1.0 -> "Límite superado por ${trimNumber(km - shoe.limitKm, 1)} km"
+                        else -> "Te quedan ${trimNumber(shoe.limitKm - km, 1)} km"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (ratio >= 1.0 && !shoe.retired) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Spacer(Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = { ratio.coerceIn(0.0, 1.0).toFloat() },
-                modifier = Modifier.fillMaxWidth(),
-                color = barColor,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                gapSize = 0.dp,
-                drawStopIndicator = {},
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                when {
-                    shoe.retired -> "Retirada"
-                    ratio >= 1.0 -> "Límite superado por ${trimNumber(km - shoe.limitKm, 1)} km"
-                    else -> "Te quedan ${trimNumber(shoe.limitKm - km, 1)} km"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = if (ratio >= 1.0 && !shoe.retired) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -127,15 +141,47 @@ private fun ShoeDialog(initial: Shoe?, onDismiss: () -> Unit, onSave: (Shoe) -> 
     var initialKm by remember { mutableStateOf(initial?.initialKm?.let { if (it > 0) trimNumber(it, 1) else "" } ?: "") }
     var retired by remember { mutableStateOf(initial?.retired ?: false) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var photo by remember { mutableStateOf(initial?.photo) }
+    var photoError by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Una foto elegida en este diálogo y aún no guardada es un archivo huérfano si se descarta o se reemplaza.
+    fun discardUnsavedPhoto() { if (photo != initial?.photo) ShoePhotos.delete(context, photo) }
+
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) scope.launch {
+            val name = withContext(Dispatchers.IO) { ShoePhotos.import(context, uri) }
+            photoError = name == null
+            if (name != null) { discardUnsavedPhoto(); photo = name }
+        }
+    }
+    val dismiss = { discardUnsavedPhoto(); onDismiss() }
 
     val limitValue = parseKm(limit)?.takeIf { it > 0 }
     val initialValue = if (initialKm.isBlank()) 0.0 else parseKm(initialKm)
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = dismiss,
         title = { Text(if (initial == null) "Nueva zapatilla" else "Editar zapatilla") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ShoePhoto(photo, Modifier.size(96.dp).clip(MaterialTheme.shapes.small))
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        OutlinedButton(
+                            onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                            shape = MaterialTheme.shapes.medium,
+                        ) { Text(if (photo == null) "Añadir foto" else "Cambiar foto") }
+                        if (photo != null) {
+                            TextButton(onClick = { discardUnsavedPhoto(); photo = null; photoError = false }) { Text("Quitar foto") }
+                        }
+                    }
+                }
+                if (photoError) {
+                    Text("No se pudo cargar la imagen.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
                 OutlinedTextField(
                     value = name, onValueChange = { name = it }, label = { Text("Nombre (marca y modelo)") },
                     singleLine = true, modifier = Modifier.fillMaxWidth(),
@@ -168,13 +214,13 @@ private fun ShoeDialog(initial: Shoe?, onDismiss: () -> Unit, onSave: (Shoe) -> 
                 onClick = {
                     onSave(
                         (initial ?: Shoe(name = "", limitKm = 0.0)).copy(
-                            name = name.trim(), limitKm = limitValue!!, initialKm = initialValue!!, retired = retired,
+                            name = name.trim(), limitKm = limitValue!!, initialKm = initialValue!!, retired = retired, photo = photo,
                         ),
                     )
                 },
             ) { Text("Guardar") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        dismissButton = { TextButton(onClick = dismiss) { Text("Cancelar") } },
     )
 
     if (confirmDelete) {
