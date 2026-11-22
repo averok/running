@@ -87,6 +87,22 @@ class UpdateCheckTest {
         }
     }
 
+    /** Respuesta real de GET /releases/latest del release v0.2.0 (guardada tal cual), no un JSON fabricado. */
+    @Test fun parseRelease_respuesta_real_de_github() {
+        val body = javaClass.getResourceAsStream("/github-latest-release.json")!!.readBytes().decodeToString()
+        val r = UpdateCheck.parseRelease(body)
+        assertNotNull(r)
+        r!!
+        assertEquals("0.2.0", r.version)
+        assertEquals("running-0.2.0.apk", r.apkName)
+        assertEquals("https://github.com/averok/running/releases/download/v0.2.0/running-0.2.0.apk", r.apkUrl)
+        assertTrue(r.apkSize > 1_000_000)
+        assertEquals("2ec1638444a5eb99a51d8fc5ae6977a9b2f7372b7a509689a7ba2ff2c46a9453", r.sha256)
+        // Y la versión publicada no es "más nueva" que ella misma, pero sí que una 0.1.0.
+        assertFalse(UpdateCheck.isNewer(r.version, "0.2.0"))
+        assertTrue(UpdateCheck.isNewer(r.version, "0.1.0"))
+    }
+
     @Test fun parseRelease_elige_el_primer_apk() {
         val assets = """[{"name":"notas.txt","browser_download_url":"https://x/n.txt"},{"name":"b.APK","browser_download_url":"https://x/b.APK"},{"name":"c.apk","browser_download_url":"https://x/c.apk"}]"""
         assertEquals("b.APK", UpdateCheck.parseRelease(release(assets = assets))!!.apkName)
