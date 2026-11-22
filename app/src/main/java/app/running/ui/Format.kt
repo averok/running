@@ -54,3 +54,5 @@ fun Summary.label(): String {
     if (parts.isEmpty()) return "Sin datos"
     return (if (approx) "≈ " else "") + parts.joinToString(" · ")
 }
+
+fun Int.blocksLabel(): String = if (this == 1) "1 bloque" else "$this bloques"

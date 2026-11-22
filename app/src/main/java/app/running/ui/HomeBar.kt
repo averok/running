@@ -19,13 +19,18 @@ enum class HomeTab(val label: String, val icon: ImageVector) {
 
 @Composable
 fun HomeBar(vm: WorkoutViewModel) {
-    NavigationBar {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
         HomeTab.entries.forEach { t ->
             NavigationBarItem(
                 selected = vm.tab == t,
                 onClick = { vm.tab = t },
                 icon = { androidx.compose.material3.Icon(t.icon, null) },
                 label = { Text(t.label) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
             )
         }
     }

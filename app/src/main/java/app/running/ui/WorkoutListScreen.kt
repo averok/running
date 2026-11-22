@@ -23,15 +23,9 @@ fun WorkoutListScreen(vm: WorkoutViewModel) {
     var toDelete by remember { mutableStateOf<Workout?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Mis entrenos") }) },
+        topBar = { PolarTopBar("Mis entrenos") },
         bottomBar = { HomeBar(vm) },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = vm::newWorkout,
-                icon = { Icon(Icons.Default.Add, null) },
-                text = { Text("Nuevo entreno") },
-            )
-        },
+        floatingActionButton = { PolarFab("Nuevo entreno", Icons.Default.Add, vm::newWorkout) },
     ) { padding ->
         if (workouts.isEmpty()) {
             Column(
@@ -55,13 +49,13 @@ fun WorkoutListScreen(vm: WorkoutViewModel) {
             ) {
                 items(workouts, key = { it.id }) { w ->
                     val blocks = w.expanded()
-                    Card(Modifier.fillMaxWidth().clickable { vm.edit(w) }) {
+                    PolarCard(Modifier.fillMaxWidth().clickable { vm.edit(w) }) {
                         Column(Modifier.padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text(w.name, style = MaterialTheme.typography.titleMedium)
                                     Text(
-                                        "${blocks.size} bloques · ${blocks.summary().label()}",
+                                        "${blocks.size.blocksLabel()} · ${blocks.summary().label()}",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )

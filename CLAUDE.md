@@ -34,6 +34,14 @@ Paquete `app.running` en `app/src/main/java/app/running/`:
 - `ui/WorkoutViewModel.kt`: único ViewModel. Mantiene los stores de entrenos, zapatillas y sesiones, el borrador del editor (`_draft`) y el aviso de límite (`_alert`).
 - `ui/`: pantallas Compose (`WorkoutListScreen`, `WorkoutEditorScreen`, `BlockDialog`, `SessionsScreen`, `ShoesScreen`), barra de pestañas (`HomeBar`: Entrenos / Sesiones / Zapatillas), `Timeline` (cronograma de colores), `Format` y `Theme`.
 
+## Estilo visual (inspirado en Polar Flow)
+
+- Tema fijo en `ui/Theme.kt` (sin colores dinámicos del sistema): rojo Polar `#D0002A` como único color de marca, fondo blanco/gris, formas casi rectas (2–6 dp), claro y oscuro.
+- Los colores de bloque usan la paleta de zonas de Polar: calentamiento ámbar, trabajo rosa, recuperación verde, enfriamiento azul, descanso gris.
+- Componentes compartidos en `ui/PolarComponents.kt`: `PolarTopBar` (título centrado + línea roja), `SectionHeader`, `StatBlock` (cifra grande + unidad pequeña + etiqueta), `PolarCard` (plana, borde fino) y `PolarFab`. Usarlos en pantallas nuevas en vez de `Card`/`TopAppBar`/FAB de Material.
+- Los botones deben llevar `shape = MaterialTheme.shapes.medium` para que no salgan en píldora.
+- Las capturas de referencia están en `polar-screenshots/` (ignorada por git: son de Polar).
+
 ## Reglas de negocio a respetar
 
 - Aviso de zapatillas al registrar una sesión: «casi al límite» a partir del 90 %, y «límite alcanzado» cada vez que una sesión deja la zapatilla en el límite o por encima. Barra de progreso naranja ≥ 90 %, roja al llegar al límite.

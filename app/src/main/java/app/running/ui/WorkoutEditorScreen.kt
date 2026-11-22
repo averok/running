@@ -36,8 +36,8 @@ fun WorkoutEditorScreen(vm: WorkoutViewModel, draft: Workout) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (vm.isNew) "Nuevo entreno" else "Editar entreno") },
+            PolarTopBar(
+                title = if (vm.isNew) "Nuevo entreno" else "Editar entreno",
                 navigationIcon = {
                     IconButton(onClick = close) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") }
                 },
@@ -90,12 +90,12 @@ fun WorkoutEditorScreen(vm: WorkoutViewModel, draft: Workout) {
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilledTonalButton(onClick = { dialog = DialogState.AddSingle }, Modifier.weight(1f)) {
+                    FilledTonalButton(onClick = { dialog = DialogState.AddSingle }, Modifier.weight(1f), shape = MaterialTheme.shapes.medium) {
                         Icon(Icons.Default.Add, null)
                         Spacer(Modifier.width(6.dp))
                         Text("Bloque")
                     }
-                    FilledTonalButton(onClick = vm::addGroup, Modifier.weight(1f)) {
+                    FilledTonalButton(onClick = vm::addGroup, Modifier.weight(1f), shape = MaterialTheme.shapes.medium) {
                         Icon(Icons.Default.Repeat, null)
                         Spacer(Modifier.width(6.dp))
                         Text("Repetición")
@@ -136,17 +136,33 @@ fun WorkoutEditorScreen(vm: WorkoutViewModel, draft: Workout) {
 @Composable
 private fun SummaryCard(w: Workout) {
     val blocks = w.expanded()
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-        Column(Modifier.padding(16.dp)) {
-            Text(
-                if (blocks.isEmpty()) "Añade bloques para construir el entreno"
-                else "${blocks.size} bloques · ${blocks.summary().label()}",
-                style = MaterialTheme.typography.titleSmall,
-            )
-            if (blocks.isNotEmpty()) {
-                Spacer(Modifier.height(12.dp))
-                Timeline(blocks, height = 48)
+    PolarCard(Modifier.fillMaxWidth()) {
+        // Bloque rojo de resumen, como en Polar.
+        Column(
+            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(vertical = 14.dp, horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            if (blocks.isEmpty()) {
+                Text(
+                    "Añade bloques para construir el entreno",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            } else {
+                Text(
+                    blocks.summary().label(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+                Text(
+                    blocks.size.blocksLabel(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+                )
             }
+        }
+        if (blocks.isNotEmpty()) {
+            Timeline(blocks, Modifier.padding(16.dp), height = 48)
         }
     }
 }
@@ -160,7 +176,7 @@ private fun SingleCard(
     onDuplicate: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Card(Modifier.fillMaxWidth()) {
+    PolarCard(Modifier.fillMaxWidth()) {
         BlockRow(item.block, onEdit) {
             SmallIconButton(onClick = onUp) { Icon(Icons.Default.KeyboardArrowUp, "Subir") }
             SmallIconButton(onClick = onDown) { Icon(Icons.Default.KeyboardArrowDown, "Bajar") }
@@ -184,9 +200,9 @@ private fun GroupCard(
     onDuplicate: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Card(
+    PolarCard(
         Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Column(Modifier.padding(vertical = 8.dp)) {
             Row(Modifier.padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -227,7 +243,7 @@ private fun BlockRow(block: Block, onClick: () -> Unit, actions: @Composable Row
         Modifier.fillMaxWidth().clickable(onClick = onClick).padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.width(6.dp).height(40.dp).clip(RoundedCornerShape(3.dp)).background(block.type.color()))
+        Box(Modifier.width(6.dp).height(40.dp).background(block.type.color()))
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(block.type.label, style = MaterialTheme.typography.titleSmall)

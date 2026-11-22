@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import app.running.model.Block
 import app.running.model.timelineWeight
@@ -23,7 +22,6 @@ fun Timeline(blocks: List<Block>, modifier: Modifier = Modifier, height: Int = 3
                 Modifier
                     .weight(b.timelineWeight())
                     .fillMaxHeight(b.type.intensity())
-                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(2.dp))
                     .background(b.type.color()),
             )
         }

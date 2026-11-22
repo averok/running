@@ -36,15 +36,9 @@ fun SessionsScreen(vm: WorkoutViewModel) {
     var toDelete by remember { mutableStateOf<Session?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Sesiones") }) },
+        topBar = { PolarTopBar("Sesiones") },
         bottomBar = { HomeBar(vm) },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { showDialog = true },
-                icon = { Icon(Icons.Default.Add, null) },
-                text = { Text("Registrar sesión") },
-            )
-        },
+        floatingActionButton = { PolarFab("Registrar sesión", Icons.Default.Add, { showDialog = true }) },
     ) { padding ->
         if (sessions.isEmpty()) {
             Box(Modifier.padding(padding).fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -62,20 +56,24 @@ fun SessionsScreen(vm: WorkoutViewModel) {
             ) {
                 items(sessions.sortedByDescending { it.epochDay }, key = { it.id }) { s ->
                     val shoeName = shoes.find { it.id == s.shoeId }?.name
-                    Card(Modifier.fillMaxWidth()) {
+                    PolarCard(Modifier.fillMaxWidth()) {
                         Row(Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(s.workoutName ?: "Carrera libre", style = MaterialTheme.typography.titleMedium)
-                                Text(
-                                    "${dayLabel(s.epochDay)} · ${formatDistance(s.distanceMeters)}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
+                                Text(dayLabel(s.epochDay), style = MaterialTheme.typography.bodyMedium)
                                 Text(
                                     shoeName ?: "Sin zapatillas",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
+                            val km = s.distanceMeters >= 1000
+                            StatBlock(
+                                value = if (km) trimNumber(s.distanceMeters / 1000.0, 2) else s.distanceMeters.toString(),
+                                unit = if (km) "km" else "m",
+                                label = "Distancia",
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                            )
                             IconButton(onClick = { toDelete = s }) { Icon(Icons.Default.Delete, "Borrar") }
                         }
                     }
@@ -129,7 +127,7 @@ private fun SessionDialog(
         title = { Text("Registrar sesión") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = { showDatePicker = true }, Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = { showDatePicker = true }, Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium) {
                     Text("Fecha: ${dayLabel(epochDay)}")
                 }
                 Picker(
@@ -192,7 +190,7 @@ private fun SessionDialog(
 private fun <T> Picker(label: String, selected: String, options: List<Pair<String, T>>, onSelect: (T) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
-        OutlinedButton(onClick = { open = true }, Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = { open = true }, Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium) {
             Text("$label: $selected", Modifier.weight(1f), maxLines = 1)
             Icon(Icons.Default.ArrowDropDown, null)
         }

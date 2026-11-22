@@ -27,15 +27,9 @@ fun ShoesScreen(vm: WorkoutViewModel) {
     var creating by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Zapatillas") }) },
+        topBar = { PolarTopBar("Zapatillas") },
         bottomBar = { HomeBar(vm) },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { creating = true },
-                icon = { Icon(Icons.Default.Add, null) },
-                text = { Text("Nueva zapatilla") },
-            )
-        },
+        floatingActionButton = { PolarFab("Nueva zapatilla", Icons.Default.Add, { creating = true }) },
     ) { padding ->
         if (shoes.isEmpty()) {
             Box(Modifier.padding(padding).fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -54,7 +48,7 @@ fun ShoesScreen(vm: WorkoutViewModel) {
             ) {
                 items(active, key = { it.id }) { ShoeCard(it, it.totalKm(sessions)) { editing = it } }
                 if (retired.isNotEmpty()) {
-                    item { Text("Retiradas", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp)) }
+                    item { SectionHeader("Retiradas", Modifier.padding(top = 8.dp)) }
                     items(retired, key = { it.id }) { ShoeCard(it, it.totalKm(sessions)) { editing = it } }
                 }
             }
@@ -84,22 +78,30 @@ private fun ShoeCard(shoe: Shoe, km: Double, onClick: () -> Unit) {
     val ratio = if (shoe.limitKm > 0) km / shoe.limitKm else 0.0
     val barColor = when {
         ratio >= 1.0 -> MaterialTheme.colorScheme.error
-        ratio >= 0.9 -> Color(0xFFF2A93B)
-        else -> MaterialTheme.colorScheme.primary
+        ratio >= 0.9 -> PolarAmber
+        else -> PolarBlue
     }
-    Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Column(Modifier.padding(16.dp).then(if (shoe.retired) Modifier else Modifier)) {
+    PolarCard(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+        Column(Modifier.padding(16.dp)) {
             Text(shoe.name, style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(4.dp))
-            Text(
-                "${trimNumber(km, 1)} / ${trimNumber(shoe.limitKm, 0)} km",
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(trimNumber(km, 1), style = StatNumber)
+                Text(
+                    " / ${trimNumber(shoe.limitKm, 0)} km",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                )
+            }
             Spacer(Modifier.height(8.dp))
             LinearProgressIndicator(
                 progress = { ratio.coerceIn(0.0, 1.0).toFloat() },
                 modifier = Modifier.fillMaxWidth(),
                 color = barColor,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                gapSize = 0.dp,
+                drawStopIndicator = {},
             )
             Spacer(Modifier.height(6.dp))
             Text(
