@@ -12,7 +12,7 @@ import app.running.ui.RunningTheme
 import app.running.ui.SessionsScreen
 import app.running.ui.SettingsScreen
 import app.running.ui.UpdateDialogs
-import app.running.ui.ShoeAlertDialog
+import app.running.ui.SessionResultDialog
 import app.running.ui.ShoesScreen
 import app.running.ui.WorkoutEditorScreen
 import app.running.ui.WorkoutListScreen
@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                     vm.tab == HomeTab.SETTINGS -> SettingsScreen(vm)
                     else -> ShoesScreen(vm)
                 }
-                ShoeAlertDialog(vm)
+                SessionResultDialog(vm)
                 UpdateDialogs(vm)
             }
         }

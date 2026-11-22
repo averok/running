@@ -36,9 +36,10 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
     /** Pestaña activa de la pantalla principal. */
     var tab by mutableStateOf(HomeTab.WORKOUTS)
 
-    private val _alert = MutableStateFlow<ShoeAlert?>(null)
-    val alert: StateFlow<ShoeAlert?> = _alert
-    fun dismissAlert() { _alert.value = null }
+    private val _sessionResult = MutableStateFlow<SessionResult?>(null)
+    /** Resultado de la última sesión registrada (mensajes de ánimo y aviso de zapatillas), a la espera de cerrarse. */
+    val sessionResult: StateFlow<SessionResult?> = _sessionResult
+    fun dismissSessionResult() { _sessionResult.value = null }
 
     fun saveShoe(shoe: Shoe) {
         val oldPhoto = shoes.value.find { it.id == shoe.id }?.photo
@@ -58,11 +59,20 @@ class WorkoutViewModel(app: Application) : AndroidViewModel(app) {
         val shoe = shoes.value.find { it.id == session.shoeId }
         val before = shoe?.totalKm(sessions.value)
         sessionStore.upsert(session)
-        if (shoe == null || before == null || shoe.retired) return
-        val after = shoe.totalKm(sessions.value)
-        val reached = after >= shoe.limitKm
-        val approaching = before < shoe.limitKm * 0.9 && after >= shoe.limitKm * 0.9
-        if (reached || approaching) _alert.value = ShoeAlert(shoe.name, after, shoe.limitKm, reached)
+
+        var alert: ShoeAlert? = null
+        if (shoe != null && before != null && !shoe.retired) {
+            val after = shoe.totalKm(sessions.value)
+            val reached = after >= shoe.limitKm
+            val approaching = before < shoe.limitKm * 0.9 && after >= shoe.limitKm * 0.9
+            if (reached || approaching) alert = ShoeAlert(shoe.name, after, shoe.limitKm, reached)
+        }
+
+        // Mensajes de ánimo: la sesión, el total acumulado y los km de la zapatilla (que incluyen los previos).
+        val totalMeters = sessions.value.sumOf { it.distanceMeters }.toDouble()
+        val shoeMeters = shoe?.let { it.totalKm(sessions.value) * 1000 }
+        val lines = Cheer.lines(session.distanceMeters.toDouble(), totalMeters, shoeMeters, session.id.hashCode().toLong(), ::trimNumber)
+        _sessionResult.value = SessionResult(shoe?.name, lines, alert)
     }
 
     // ---- Copia de seguridad (exportar / importar)
@@ -352,3 +362,6 @@ sealed interface UpdateState {
     /** APK descargado y verificado, listo para (re)abrir el instalador. */
     data class Ready(val release: UpdateCheck.Release, val file: java.io.File) : UpdateState
 }
+
+/** Lo que se enseña tras registrar una sesión. */
+data class SessionResult(val shoeName: String?, val lines: List<Cheer.Line>, val alert: ShoeAlert?)
