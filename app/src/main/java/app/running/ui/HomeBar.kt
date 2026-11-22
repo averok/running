@@ -3,7 +3,7 @@ package app.running.ui
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Hiking
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 enum class HomeTab(val label: String, val icon: ImageVector) {
     WORKOUTS("Entrenos", Icons.Default.FitnessCenter),
-    SESSIONS("Sesiones", Icons.Default.History),
+    SESSIONS("Historial", Icons.Default.CalendarMonth),
     SHOES("Zapatillas", Icons.Default.Hiking),
 }
 

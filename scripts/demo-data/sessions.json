@@ -1,0 +1,69 @@
+[
+  {
+    "id": "ad9427f0-d265-4df3-9feb-267a95712e2c",
+    "epochDay": 20760,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "distanceMeters": 8200,
+    "workoutName": "Rodaje suave 40'"
+  },
+  {
+    "id": "ca1e0289-bed2-41fa-b075-666d6fd9eabe",
+    "epochDay": 20762,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000002",
+    "distanceMeters": 8000,
+    "workoutName": "Series 6\u00d7400 m"
+  },
+  {
+    "id": "d4746458-3889-4fc5-b119-fe3b2f8882af",
+    "epochDay": 20764,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "distanceMeters": 14100
+  },
+  {
+    "id": "db0d3e0b-7da8-4a0a-9f9f-e31546e96dc7",
+    "epochDay": 20767,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "distanceMeters": 6500,
+    "workoutName": "Rodaje suave 40'"
+  },
+  {
+    "id": "ee87392a-919f-43e7-a5f8-6acf1f9a10e7",
+    "epochDay": 20769,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000002",
+    "distanceMeters": 9000,
+    "workoutName": "Fartlek 8\u00d7(1' + 1')"
+  },
+  {
+    "id": "6f5bc6d5-2ddc-4dc8-a199-b9b00623e9b0",
+    "epochDay": 20771,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "distanceMeters": 16300
+  },
+  {
+    "id": "8d1dd31e-4ce2-4970-88f5-0abac16af007",
+    "epochDay": 20774,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "distanceMeters": 7400,
+    "workoutName": "Rodaje suave 40'"
+  },
+  {
+    "id": "277862e9-a44a-44f2-8634-916a2d21cabb",
+    "epochDay": 20776,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000002",
+    "distanceMeters": 10200,
+    "workoutName": "Progresivo 5 km"
+  },
+  {
+    "id": "cd924115-e65a-49ed-b295-d32c82846590",
+    "epochDay": 20778,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "distanceMeters": 18000
+  },
+  {
+    "id": "cda1ca2b-4605-43d1-817b-55e0fc9a9339",
+    "epochDay": 20779,
+    "shoeId": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "distanceMeters": 5000,
+    "workoutName": "Rodaje suave 40'"
+  }
+]

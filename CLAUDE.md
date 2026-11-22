@@ -32,7 +32,7 @@ Paquete `app.running` en `app/src/main/java/app/running/`:
 - `model/Samples.kt`: entrenos de ejemplo (6×400, rodaje, fartlek, progresivo) para el botón «Cargar ejemplos».
 - `data/JsonListStore.kt`: persistencia genérica en JSON local (`filesDir`, escritura atómica vía `.tmp` + rename), expuesta como `StateFlow`. Migrable a Room si crece.
 - `ui/WorkoutViewModel.kt`: único ViewModel. Mantiene los stores de entrenos, zapatillas y sesiones, el borrador del editor (`_draft`) y el aviso de límite (`_alert`).
-- `ui/`: pantallas Compose (`WorkoutListScreen`, `WorkoutEditorScreen`, `BlockDialog`, `SessionsScreen`, `ShoesScreen`), barra de pestañas (`HomeBar`: Entrenos / Sesiones / Zapatillas), `Timeline` (cronograma de colores), `Format` y `Theme`.
+- `ui/`: pantallas Compose (`WorkoutListScreen`, `WorkoutEditorScreen`, `BlockDialog`, `SessionsScreen`, `ShoesScreen`), barra de pestañas (`HomeBar`: Entrenos / Historial / Zapatillas), `MonthCalendar` (cuadrícula mensual desde el lunes), `Timeline` (cronograma de colores), `Format` y `Theme`. `SessionsScreen` es la pestaña **Historial**: calendario + resumen del mes + sesiones del día elegido, y el registro de sesión hereda el día seleccionado. Los nombres de meses y días usan `EsLocale` (español fijo, como el resto de textos).
 
 ## Estilo visual (inspirado en Polar Flow)
 
@@ -41,6 +41,13 @@ Paquete `app.running` en `app/src/main/java/app/running/`:
 - Componentes compartidos en `ui/PolarComponents.kt`: `PolarTopBar` (título centrado + línea roja), `SectionHeader`, `StatBlock` (cifra grande + unidad pequeña + etiqueta), `PolarCard` (plana, borde fino) y `PolarFab`. Usarlos en pantallas nuevas en vez de `Card`/`TopAppBar`/FAB de Material.
 - Los botones deben llevar `shape = MaterialTheme.shapes.medium` para que no salgan en píldora.
 - Las capturas de referencia están en `polar-screenshots/` (ignorada por git: son de Polar).
+
+## Capturas del README
+
+- Están en `docs/screenshots/` (`entrenos`, `editor`, `historial`, `zapatillas`; 540 px de ancho) y se muestran en el README.
+- **Al cambiar la interfaz de forma visible, regenerarlas** y, si se añade una pantalla importante, incluirla en el README.
+- Datos de ejemplo en `scripts/demo-data/` (`shoes.json`, `sessions.json`, fechas de noviembre de 2026). Para cargarlos en el emulador: `adb shell am force-stop app.running`, luego `adb shell "run-as app.running sh -c 'cat > files/shoes.json'" < scripts/demo-data/shoes.json` (igual con `sessions.json`) y abrir la app. Captura con `adb exec-out screencap -p` y reducir con `magick … -resize 540x`.
+- Si el mes actual ya no es noviembre de 2026, navegar al calendario a ese mes antes de capturar.
 
 ## Reglas de negocio a respetar
 

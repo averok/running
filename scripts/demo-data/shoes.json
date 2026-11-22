@@ -1,0 +1,14 @@
+[
+  {
+    "id": "11111111-aaaa-4aaa-8aaa-000000000001",
+    "name": "Nike Pegasus 41",
+    "limitKm": 700.0,
+    "initialKm": 412.0
+  },
+  {
+    "id": "11111111-aaaa-4aaa-8aaa-000000000002",
+    "name": "ASICS Novablast 4",
+    "limitKm": 600.0,
+    "initialKm": 540.0
+  }
+]
