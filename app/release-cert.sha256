@@ -1,0 +1,3 @@
+# Huella SHA-256 (pública) del certificado con el que se firman los releases.
+# scripts/release.sh comprueba que el APK coincide con esta huella antes de dejarlo listo.
+ED:1C:11:39:ED:68:74:5C:63:4E:5F:B4:DB:F3:DF:24:D9:5C:F9:07:7D:9B:C8:2E:F3:F7:B2:35:00:F6:8D:3B
